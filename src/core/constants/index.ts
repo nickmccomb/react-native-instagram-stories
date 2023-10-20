@@ -23,7 +23,7 @@ export const LOADER_URL = `url(#${LOADER_ID})`;
 
 export const STROKE_WIDTH = 2;
 
-export const AVATAR_SIZE = 130;
+export const AVATAR_SIZE = 160;
 export const AVATAR_OFFSET = 5;
 export const STORY_AVATAR_SIZE = 26;
 
