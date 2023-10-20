@@ -89,7 +89,11 @@ const InstagramStories = forwardRef<
         );
         const seenStory = story.stories[seenStoryIndex + 1] || story.stories[0];
 
-        return Image.prefetch(seenStory.sourceUrl);
+        if (seenStory.mediaType === "image") {
+          return Image.prefetch(seenStory.sourceUrl);
+        }
+
+        return true;
       });
 
       await Promise.all(promises);

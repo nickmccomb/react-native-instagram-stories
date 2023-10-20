@@ -51,7 +51,7 @@ const StoryImage: FC<StoryImageProps> = ({
 
     const nextStory = stories[stories.indexOf(story) + 1];
 
-    if (nextStory) {
+    if (nextStory && nextStory.mediaType === "image") {
       Image.prefetch(nextStory.sourceUrl);
     }
   };
