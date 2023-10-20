@@ -1,240 +1,233 @@
-import React, {
-  forwardRef, useImperativeHandle, useState, useEffect, useRef, memo,
-} from 'react';
-import { useSharedValue } from 'react-native-reanimated';
-import { Image, ScrollView } from 'react-native';
-import StoryAvatar from '../Avatar';
-import { clearProgressStorage, getProgressStorage, setProgressStorage } from '../../core/helpers/storage';
-import { InstagramStoriesProps, InstagramStoriesPublicMethods } from '../../core/dto/instagramStoriesDTO';
-import { ProgressStorageProps } from '../../core/dto/helpersDTO';
 import {
-  ANIMATION_DURATION, DEFAULT_COLORS, SEEN_LOADER_COLORS,
-  STORY_AVATAR_SIZE, AVATAR_SIZE, BACKGROUND_COLOR, CLOSE_COLOR,
-} from '../../core/constants';
-import StoryModal from '../Modal';
-import { StoryModalPublicMethods } from '../../core/dto/componentsDTO';
+  ANIMATION_DURATION,
+  AVATAR_SIZE,
+  BACKGROUND_COLOR,
+  CLOSE_COLOR,
+  DEFAULT_COLORS,
+  SEEN_LOADER_COLORS,
+  STORY_AVATAR_SIZE,
+} from "../../core/constants";
+import { Image, ScrollView } from "react-native";
+import {
+  InstagramStoriesProps,
+  InstagramStoriesPublicMethods,
+} from "../../core/dto/instagramStoriesDTO";
+import React, {
+  forwardRef,
+  memo,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
+import {
+  clearProgressStorage,
+  getProgressStorage,
+  setProgressStorage,
+} from "../../core/helpers/storage";
 
-const InstagramStories = forwardRef<InstagramStoriesPublicMethods, InstagramStoriesProps>( ( {
-  stories,
-  saveProgress = false,
-  avatarBorderColors = DEFAULT_COLORS,
-  avatarSeenBorderColors = SEEN_LOADER_COLORS,
-  avatarSize = AVATAR_SIZE,
-  storyAvatarSize = STORY_AVATAR_SIZE,
-  listContainerStyle,
-  listContainerProps,
-  animationDuration = ANIMATION_DURATION,
-  backgroundColor = BACKGROUND_COLOR,
-  showName = false,
-  nameTextStyle,
-  videoAnimationMaxDuration,
-  videoProps,
-  closeIconColor = CLOSE_COLOR,
-  ...props
-}, ref ) => {
+import { ProgressStorageProps } from "../../core/dto/helpersDTO";
+import StoryAvatar from "../Avatar";
+import StoryModal from "../Modal";
+import { StoryModalPublicMethods } from "../../core/dto/componentsDTO";
+import { useSharedValue } from "react-native-reanimated";
 
-  const [ data, setData ] = useState( stories );
+const InstagramStories = forwardRef<
+  InstagramStoriesPublicMethods,
+  InstagramStoriesProps
+>(
+  (
+    {
+      stories,
+      saveProgress = false,
+      avatarBorderColors = DEFAULT_COLORS,
+      avatarSeenBorderColors = SEEN_LOADER_COLORS,
+      avatarSize = AVATAR_SIZE,
+      storyAvatarSize = STORY_AVATAR_SIZE,
+      listContainerStyle,
+      listContainerProps,
+      animationDuration = ANIMATION_DURATION,
+      backgroundColor = BACKGROUND_COLOR,
+      showName = false,
+      nameTextStyle,
+      videoAnimationMaxDuration,
+      videoProps,
+      closeIconColor = CLOSE_COLOR,
+      ...props
+    },
+    ref
+  ) => {
+    const [data, setData] = useState(stories);
+    const seenStories = useSharedValue<ProgressStorageProps>({});
+    const loadedStories = useSharedValue(false);
+    const loadingStory = useSharedValue<string | undefined>(undefined);
+    const modalRef = useRef<StoryModalPublicMethods>(null);
 
-  const seenStories = useSharedValue<ProgressStorageProps>( {} );
-  const loadedStories = useSharedValue( false );
-  const loadingStory = useSharedValue<string | undefined>( undefined );
+    const onPress = (id: string) => {
+      "wokrlet";
+      loadingStory.value = id;
 
-  const modalRef = useRef<StoryModalPublicMethods>( null );
+      if (loadedStories.value) {
+        modalRef.current?.show(id);
+      }
+    };
 
-  const onPress = ( id: string ) => {
+    const onLoad = () => {
+      "wokrlet";
+      loadingStory.value = undefined;
+    };
 
-    'wokrlet';
+    const onStoriesChange = async () => {
+      "wokrlet";
 
-    loadingStory.value = id;
+      seenStories.value = await (saveProgress ? getProgressStorage() : {});
 
-    if ( loadedStories.value ) {
+      const promises = stories.map((story) => {
+        const seenStoryIndex = story.stories.findIndex(
+          (item) => item.id === seenStories.value[story.id]
+        );
+        const seenStory = story.stories[seenStoryIndex + 1] || story.stories[0];
 
-      modalRef.current?.show( id );
+        return Image.prefetch(seenStory.sourceUrl);
+      });
 
-    }
+      await Promise.all(promises);
 
-  };
+      loadedStories.value = true;
 
-  const onLoad = () => {
+      if (loadingStory.value) {
+        onPress(loadingStory.value);
+      }
+    };
 
-    'wokrlet';
-
-    loadingStory.value = undefined;
-
-  };
-
-  const onStoriesChange = async () => {
-
-    'wokrlet';
-
-    seenStories.value = await ( saveProgress ? getProgressStorage() : {} );
-
-    const promises = stories.map( ( story ) => {
-
-      const seenStoryIndex = story.stories.findIndex(
-        ( item ) => item.id === seenStories.value[story.id],
-      );
-      const seenStory = story.stories[seenStoryIndex + 1] || story.stories[0];
-
-      return Image.prefetch( seenStory.sourceUrl );
-
-    } );
-
-    await Promise.all( promises );
-
-    loadedStories.value = true;
-
-    if ( loadingStory.value ) {
-
-      onPress( loadingStory.value );
-
-    }
-
-  };
-
-  const onSeenStoriesChange = async ( user: string, value: string ) => {
-
-    if ( !saveProgress ) {
-
-      return;
-
-    }
-
-    if ( seenStories.value[user] ) {
-
-      const userData = data.find( ( story ) => story.id === user );
-      const oldIndex = userData?.stories.findIndex(
-        ( story ) => story.id === seenStories.value[user],
-      );
-      const newIndex = userData?.stories.findIndex( ( story ) => story.id === value );
-
-      if ( oldIndex! > newIndex! ) {
-
+    const onSeenStoriesChange = async (user: string, value: string) => {
+      if (!saveProgress) {
         return;
-
       }
 
-    }
+      if (seenStories.value[user]) {
+        const userData = data.find((story) => story.id === user);
+        const oldIndex = userData?.stories.findIndex(
+          (story) => story.id === seenStories.value[user]
+        );
+        const newIndex = userData?.stories.findIndex(
+          (story) => story.id === value
+        );
 
-    seenStories.value = await setProgressStorage( user, value );
-
-  };
-
-  useImperativeHandle(
-    ref,
-    () => ( {
-      spliceStories: ( newStories, index ) => {
-
-        if ( index === undefined ) {
-
-          setData( [ ...data, ...newStories ] );
-
-        } else {
-
-          const newData = [ ...data ];
-          newData.splice( index, 0, ...newStories );
-          setData( newData );
-
-        }
-
-      },
-      spliceUserStories: ( newStories, user, index ) => {
-
-        const userData = data.find( ( story ) => story.id === user );
-
-        if ( !userData ) {
-
+        if (oldIndex! > newIndex!) {
           return;
-
         }
+      }
 
-        const newData = index === undefined
-          ? [ ...userData.stories, ...newStories ]
-          : [ ...userData.stories ];
+      seenStories.value = await setProgressStorage(user, value);
+    };
 
-        if ( index !== undefined ) {
+    useImperativeHandle(
+      ref,
+      () => ({
+        spliceStories: (newStories, index) => {
+          if (index === undefined) {
+            setData([...data, ...newStories]);
+          } else {
+            const newData = [...data];
+            newData.splice(index, 0, ...newStories);
+            setData(newData);
+          }
+        },
+        spliceUserStories: (newStories, user, index) => {
+          const userData = data.find((story) => story.id === user);
 
-          newData.splice( index, 0, ...newStories );
+          if (!userData) {
+            return;
+          }
 
-        }
+          const newData =
+            index === undefined
+              ? [...userData.stories, ...newStories]
+              : [...userData.stories];
 
-        setData( data.map( ( value ) => ( value.id === user ? {
-          ...value,
-          stories: newData,
-        } : value ) ) );
+          if (index !== undefined) {
+            newData.splice(index, 0, ...newStories);
+          }
 
-      },
-      setStories: ( newStories ) => {
+          setData(
+            data.map((value) =>
+              value.id === user
+                ? {
+                    ...value,
+                    stories: newData,
+                  }
+                : value
+            )
+          );
+        },
+        setStories: (newStories) => {
+          setData(newStories);
+        },
+        clearProgressStorage,
+        hide: () => modalRef.current?.hide(),
+        show: (id) => {
+          if (id) {
+            onPress(id);
+          } else if (data[0]?.id) {
+            onPress(data[0]?.id);
+          }
+        },
+      }),
+      [data]
+    );
 
-        setData( newStories );
+    useEffect(() => {
+      onStoriesChange();
+    }, [data]);
 
-      },
-      clearProgressStorage,
-      hide: () => modalRef.current?.hide(),
-      show: ( id ) => {
+    useEffect(() => {
+      setData(stories);
+    }, [stories]);
 
-        if ( id ) {
+    return (
+      <>
+        <ScrollView
+          horizontal
+          {...listContainerProps}
+          contentContainerStyle={listContainerStyle}
+          testID="storiesList"
+        >
+          {data.map(
+            (story) =>
+              story.imgUrl && (
+                <StoryAvatar
+                  {...story}
+                  loadingStory={loadingStory}
+                  seenStories={seenStories}
+                  onPress={() => onPress(story.id)}
+                  colors={avatarBorderColors}
+                  seenColors={avatarSeenBorderColors}
+                  size={avatarSize}
+                  showName={showName}
+                  nameTextStyle={nameTextStyle}
+                  key={`avatar${story.id}`}
+                />
+              )
+          )}
+        </ScrollView>
+        <StoryModal
+          ref={modalRef}
+          stories={data}
+          seenStories={seenStories}
+          duration={animationDuration}
+          storyAvatarSize={storyAvatarSize}
+          onLoad={onLoad}
+          onSeenStoriesChange={onSeenStoriesChange}
+          backgroundColor={backgroundColor}
+          videoDuration={videoAnimationMaxDuration}
+          videoProps={videoProps}
+          closeIconColor={closeIconColor}
+          {...props}
+        />
+      </>
+    );
+  }
+);
 
-          onPress( id );
-
-        } else if ( data[0]?.id ) {
-
-          onPress( data[0]?.id );
-
-        }
-
-      },
-    } ),
-    [ data ],
-  );
-
-  useEffect( () => {
-
-    onStoriesChange();
-
-  }, [ data ] );
-
-  useEffect( () => {
-
-    setData( stories );
-
-  }, [ stories ] );
-
-  return (
-    <>
-      <ScrollView horizontal {...listContainerProps} contentContainerStyle={listContainerStyle} testID="storiesList">
-        {data.map( ( story ) => story.imgUrl && (
-          <StoryAvatar
-            {...story}
-            loadingStory={loadingStory}
-            seenStories={seenStories}
-            onPress={() => onPress( story.id )}
-            colors={avatarBorderColors}
-            seenColors={avatarSeenBorderColors}
-            size={avatarSize}
-            showName={showName}
-            nameTextStyle={nameTextStyle}
-            key={`avatar${story.id}`}
-          />
-        ) )}
-      </ScrollView>
-      <StoryModal
-        ref={modalRef}
-        stories={data}
-        seenStories={seenStories}
-        duration={animationDuration}
-        storyAvatarSize={storyAvatarSize}
-        onLoad={onLoad}
-        onSeenStoriesChange={onSeenStoriesChange}
-        backgroundColor={backgroundColor}
-        videoDuration={videoAnimationMaxDuration}
-        videoProps={videoProps}
-        closeIconColor={closeIconColor}
-        {...props}
-      />
-    </>
-  );
-
-} );
-
-export default memo( InstagramStories );
+export default memo(InstagramStories);
