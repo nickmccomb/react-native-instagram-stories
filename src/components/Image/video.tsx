@@ -24,7 +24,13 @@ const StoryVideo: FC<StoryVideoProps> = ({
 
     return (
       <Video
-        style={{ width: WIDTH, aspectRatio: 0.5626 }}
+        style={{
+          position: "absolute",
+          backgroundColor: "red",
+          width: "100%",
+          height: "100%",
+          aspectRatio: 0.5626,
+        }}
         {...props}
         source={{ uri }}
         paused={!pausedValue}
