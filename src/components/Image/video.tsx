@@ -33,7 +33,7 @@ const StoryVideo: FC<StoryVideoProps> = ({
         {...props}
         source={{ uri }}
         paused={!pausedValue}
-        controls={false}
+        controls={true}
         repeat={false}
         onLoad={(_: any, duration: number) => onLoad(duration * 1000)}
         onLayout={(e: LayoutChangeEvent) =>
