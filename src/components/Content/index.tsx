@@ -1,38 +1,42 @@
-import React, {
-  FC, memo, useState, useMemo,
-} from 'react';
-import { View } from 'react-native';
-import { runOnJS, useAnimatedReaction } from 'react-native-reanimated';
-import { StoryContentProps } from '../../core/dto/componentsDTO';
-import ContentStyles from './Content.styles';
+import React, { FC, memo, useMemo, useState } from "react";
+import { runOnJS, useAnimatedReaction } from "react-native-reanimated";
 
-const StoryContent: FC<StoryContentProps> = ( { stories, active, activeStory } ) => {
+import ContentStyles from "./Content.styles";
+import { StoryContentProps } from "../../core/dto/componentsDTO";
+import { View } from "react-native";
 
-  const [ storyIndex, setStoryIndex ] = useState( 0 );
+const StoryContent: FC<StoryContentProps> = ({
+  stories,
+  active,
+  activeStory,
+}) => {
+  const [storyIndex, setStoryIndex] = useState(0);
 
   const onChange = async () => {
+    "worklet";
 
-    'worklet';
-
-    const index = stories.findIndex( ( item ) => item.id === activeStory.value );
-    if ( active.value && index >= 0 && index !== storyIndex ) {
-
-      runOnJS( setStoryIndex )( index );
-
+    const index = stories.findIndex((item) => item.id === activeStory.value);
+    if (active.value && index >= 0 && index !== storyIndex) {
+      runOnJS(setStoryIndex)(index);
     }
-
   };
 
   useAnimatedReaction(
     () => activeStory.value,
-    ( res, prev ) => res !== prev && onChange(),
-    [ activeStory.value ],
+    (res, prev) => res !== prev && onChange(),
+    [activeStory.value]
   );
 
-  const content = useMemo( () => stories[storyIndex]?.renderContent?.(), [ storyIndex ] );
+  const content = useMemo(
+    () => stories[storyIndex]?.renderContent?.(),
+    [storyIndex]
+  );
 
-  return content ? <View style={ContentStyles.container}>{content}</View> : null;
-
+  return content ? (
+    <View style={ContentStyles.container} pointerEvents="box-none">
+      {content}
+    </View>
+  ) : null;
 };
 
-export default memo( StoryContent );
+export default memo(StoryContent);

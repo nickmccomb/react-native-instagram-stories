@@ -14,7 +14,6 @@ import StoryVideo from "./video";
 
 const StoryImage: FC<StoryImageProps> = ({
   stories,
-  active,
   activeStory,
   defaultImage,
   isDefaultVideo,
@@ -32,10 +31,6 @@ const StoryImage: FC<StoryImageProps> = ({
   const color = useSharedValue(LOADER_COLORS);
 
   const onImageChange = async () => {
-    if (!active.value) {
-      return;
-    }
-
     const story = stories.find((item) => item.id === activeStory.value)!;
 
     if (!story) {
@@ -66,10 +61,6 @@ const StoryImage: FC<StoryImageProps> = ({
     loading.value = false;
     onLoad(duration);
   };
-
-  console.log({
-    data,
-  });
 
   return (
     <>
