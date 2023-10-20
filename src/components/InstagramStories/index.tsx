@@ -39,6 +39,7 @@ const InstagramStories = forwardRef<
   (
     {
       stories,
+      showAvatars = true,
       saveProgress = false,
       avatarBorderColors = DEFAULT_COLORS,
       avatarSeenBorderColors = SEEN_LOADER_COLORS,
@@ -187,30 +188,33 @@ const InstagramStories = forwardRef<
 
     return (
       <>
-        <ScrollView
-          horizontal
-          {...listContainerProps}
-          contentContainerStyle={listContainerStyle}
-          testID="storiesList"
-        >
-          {data.map(
-            (story) =>
-              story.imgUrl && (
-                <StoryAvatar
-                  {...story}
-                  loadingStory={loadingStory}
-                  seenStories={seenStories}
-                  onPress={() => onPress(story.id)}
-                  colors={avatarBorderColors}
-                  seenColors={avatarSeenBorderColors}
-                  size={avatarSize}
-                  showName={showName}
-                  nameTextStyle={nameTextStyle}
-                  key={`avatar${story.id}`}
-                />
-              )
-          )}
-        </ScrollView>
+        {showAvatars && (
+          <ScrollView
+            horizontal
+            {...listContainerProps}
+            contentContainerStyle={listContainerStyle}
+            testID="storiesList"
+          >
+            {data.map(
+              (story) =>
+                story.imgUrl && (
+                  <StoryAvatar
+                    {...story}
+                    loadingStory={loadingStory}
+                    seenStories={seenStories}
+                    onPress={() => onPress(story.id)}
+                    colors={avatarBorderColors}
+                    seenColors={avatarSeenBorderColors}
+                    size={avatarSize}
+                    showName={showName}
+                    nameTextStyle={nameTextStyle}
+                    key={`avatar${story.id}`}
+                  />
+                )
+            )}
+          </ScrollView>
+        )}
+
         <StoryModal
           ref={modalRef}
           stories={data}
