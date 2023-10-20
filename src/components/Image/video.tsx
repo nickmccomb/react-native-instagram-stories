@@ -4,7 +4,6 @@ import { runOnJS, useAnimatedReaction } from "react-native-reanimated";
 import { LayoutChangeEvent } from "react-native";
 import { StoryVideoProps } from "../../core/dto/componentsDTO";
 import Video from "react-native-video";
-import { WIDTH } from "../../core/constants";
 
 const StoryVideo: FC<StoryVideoProps> = ({
   uri,
