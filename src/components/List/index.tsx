@@ -49,10 +49,6 @@ const StoryList: FC<StoryListProps> = ({
     }
   };
 
-  const lastSeenIndex = stories.findIndex(
-    (item) => item.id === seenStories.value[id]
-  );
-
   return (
     <StoryAnimation x={x} index={index}>
       <Animated.View style={[animatedStyles, ListStyles.container]}>
@@ -60,9 +56,7 @@ const StoryList: FC<StoryListProps> = ({
           stories={stories}
           active={isActive}
           activeStory={activeStory}
-          defaultImage={
-            stories[lastSeenIndex + 1]?.sourceUrl ?? stories[0].sourceUrl
-          }
+          defaultImage={stories[index].sourceUrl}
           isDefaultVideo={stories[index].mediaType === "video"}
           onImageLayout={onImageLayout}
           onLoad={onImageLoad}
